@@ -4,24 +4,42 @@ import styles from './styles.module.css';
 import { getNews } from '../../API/apiNews';
 import NewsList from '../../components/NewsList/NewsList';
 import Sceleton from '../../components/Sceleton/Sceleton';
+import Pagination from '../../components/Pagination/Pagination';
 const Main = () => {
-  useEffect(() => {
-    const fetchNews = async () => {
-      try {
-        setIsLoading(true)
-        const response = await getNews();
-        setNews(response.news);
-        setIsLoading(false)
-      } catch (error) {
-        console.log(error);
-      }
-    };
-    fetchNews();
-  }, []);
+  const [currentPage, setCurrentPage] = useState(1);
+  const totalPages = 10;
+  const pageSize = 10;
 
   const [news, setNews] = useState([]);
 
   const [isLoading, setIsLoading] = useState(true);
+  const fetchNews = async (currentPage) => {
+    try {
+      setIsLoading(true);
+      const response = await getNews(currentPage, pageSize);
+      setNews(response.news);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchNews(currentPage);
+  }, [currentPage]);
+
+  const hundleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  const hundlePreviousPage = () => {
+    if (currentPage > totalPages) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+  const hundlePageClick = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <main className={styles.main}>
@@ -30,12 +48,26 @@ const Main = () => {
       ) : (
         <Sceleton type="banner" count={1} />
       )}
-
+      <Pagination
+        currentPage={currentPage}
+        hundlePageClick={hundlePageClick}
+        hundleNextPage={hundleNextPage}
+        hundlePreviousPage={hundlePreviousPage}
+        totalPages={totalPages}
+      />
       {!isLoading ? (
         <NewsList news={news} />
       ) : (
         <Sceleton type="item" count={10} />
       )}
+
+<Pagination
+        currentPage={currentPage}
+        hundlePageClick={hundlePageClick}
+        hundleNextPage={hundleNextPage}
+        hundlePreviousPage={hundlePreviousPage}
+        totalPages={totalPages}
+      />
     </main>
   );
 };
